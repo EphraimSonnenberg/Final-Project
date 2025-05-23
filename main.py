@@ -100,6 +100,7 @@ pauseButton = RectangleButton(400, 575, 200, 75, "Pause")
 unpauseButton = RectangleButton(200, 200, 300, 200, "Unpause")
 resetButton = RectangleButton(100, 575, 200, 75, "Reset")
 backgroundRec = Rectangle(Point(-1, -1), Point(701, 701))
+gameOverOverlay = RectangleText(100, 25, 500, 500, "Game Over")
 
 ##################
 # Helper methods #
@@ -112,6 +113,25 @@ def draw_grid():
     grid_drawings = []
     cell_size = 120
     padding = 10
+    for row in range(4):
+        for col in range(4):
+            x = padding + col * (cell_size + padding)
+            y = padding + row * (cell_size + padding)
+            value = GRID[row][col]
+            tile = RectangleText(x, y, cell_size, cell_size, value)
+            tile.draw(win)
+            grid_drawings.append(tile)
+            if value in (64, 256, 512, 2048):
+                tile.textBox.setTextColor("white")
+
+def draw_sim_grid():
+    global grid_drawings
+    for cell in grid_drawings:
+        cell.undraw()
+    
+    grid_drawings = []
+    cell_size = 30
+    padding = 5
     for row in range(4):
         for col in range(4):
             x = padding + col * (cell_size + padding)
@@ -153,44 +173,33 @@ def update():
             resetGRID()
             resetGRID_MERGED()
 
+    if noMovesPossible() == True:
+        gameOver()
+
     if keyboard == "w":
         up()
-        upSim()
         sleep(.4)
     elif keyboard == "Up":
         up()
-        upSim()
         sleep(.4)
     elif keyboard == "a":
         left()
-        leftSim()
         sleep(.4)
     elif keyboard == "Left":
         left()
-        leftSim()
         sleep(.4)
     elif keyboard == "s":
         down()
-        downSim()
         sleep(.4)
     elif keyboard == "Down":
         down()
-        downSim()
         sleep(.4)
     elif keyboard == "d":
         right()
-        rightSim()
         sleep(.4)
     elif keyboard == "Right":
         right()
-        rightSim()
         sleep(.4)
-    
-    if not gameOverTrigger and noMovesPossible():
-        gameOver()
-        gameOverTrigger = True
-
-        
 
 def initialSetup(graphicsWindow):
     pauseButton.draw(graphicsWindow)
@@ -241,6 +250,25 @@ def up():
         resetGRID_MERGED()
         add_random()
         draw_grid()
+    if not moved:
+        print("no")
+        add_random()
+        draw_grid()
+    return moved
+
+def upPossible():
+    moved = False
+    for col in range(4):
+        for row in range(1, 4):
+            if GRID[row][col] != 0:
+                curr_row = row
+                while curr_row > 0 and GRID[curr_row - 1][col] == 0:
+                    moved = True
+                if curr_row > 0 and GRID[curr_row - 1][col] == GRID[curr_row][col] and not GRID_MERGED[curr_row - 1][col]:
+                    moved = True
+    if not moved:
+        print("no")
+    return moved
 
 def down():
     moved = False
@@ -262,6 +290,25 @@ def down():
         resetGRID_MERGED()
         add_random()
         draw_grid()
+    if not moved:
+        print("no")
+        add_random()
+        draw_grid()
+    return moved
+
+def downPossible():
+    moved = False
+    for col in range(4):
+        for row in range(2, -1, -1):
+            if GRID[row][col] != 0:
+                curr_row = row
+                while curr_row < 3 and GRID[curr_row + 1][col] == 0:
+                    moved = True
+                if curr_row < 3 and GRID[curr_row + 1][col] == GRID[curr_row][col] and not GRID_MERGED[curr_row + 1][col]:
+                    moved = True
+    if not moved:
+        print("no")
+    return moved
 
 def left():
     moved = False
@@ -283,6 +330,25 @@ def left():
         resetGRID_MERGED()
         add_random()
         draw_grid()
+    if not moved:
+        print("no")
+        add_random()
+        draw_grid()
+    return moved
+
+def leftPossible():
+    moved = False
+    for row in range(4):
+        for col in range(1, 4):
+            if GRID[row][col] != 0:
+                curr_col = col
+                while curr_col > 0 and GRID[row][curr_col - 1] == 0:
+                    moved = True
+                if curr_col > 0 and GRID[row][curr_col - 1] == GRID[row][curr_col] and not GRID_MERGED[row][curr_col - 1]:
+                    moved = True
+    if not moved:
+        print("no")
+    return moved
 
 def right():
     moved = False
@@ -304,89 +370,38 @@ def right():
         resetGRID_MERGED()
         add_random()
         draw_grid()
-
-def upSim(grid, merged):
-    moved = False
-    for col in range(4):
-        for row in range(1, 4):
-            if grid[row][col] != 0:
-                curr_row = row
-                while curr_row > 0 and grid[curr_row - 1][col] == 0:
-                    grid[curr_row - 1][col] = grid[curr_row][col]
-                    grid[curr_row][col] = 0
-                    curr_row -= 1
-                    moved = True
-                if curr_row > 0 and grid[curr_row - 1][col] == grid[curr_row][col] and not merged[curr_row - 1][col]:
-                    grid[curr_row - 1][col] *= 2
-                    grid[curr_row][col] = 0
-                    merged[curr_row - 1][col] = True
-                    moved = True
+    if not moved:
+        print("no")
+        add_random()
+        draw_grid()
     return moved
 
-def downSim(grid, merged):
-    moved = False
-    for col in range(4):
-        for row in range(2, -1, -1):
-            if grid[row][col] != 0:
-                curr_row = row
-                while curr_row < 3 and grid[curr_row + 1][col] == 0:
-                    grid[curr_row + 1][col] = grid[curr_row][col]
-                    grid[curr_row][col] = 0
-                    curr_row += 1
-                    moved = True
-                if curr_row < 3 and grid[curr_row + 1][col] == grid[curr_row][col] and not merged[curr_row + 1][col]:
-                    grid[curr_row + 1][col] *= 2
-                    grid[curr_row][col] = 0
-                    merged[curr_row + 1][col] = True
-                    moved = True
-    return moved
-
-def leftSim(grid, merged):
-    moved = False
-    for row in range(4):
-        for col in range(1, 4):
-            if grid[row][col] != 0:
-                curr_col = col
-                while curr_col > 0 and grid[row][curr_col - 1] == 0:
-                    grid[row][curr_col - 1] = grid[row][curr_col]
-                    grid[row][curr_col] = 0
-                    curr_col -= 1
-                    moved = True
-                if curr_col > 0 and grid[row][curr_col - 1] == grid[row][curr_col] and not merged[row][curr_col - 1]:
-                    grid[row][curr_col - 1] *= 2
-                    grid[row][curr_col] = 0
-                    grid[row][curr_col - 1] = True
-                    moved = True
-    return moved
-
-def rightSim(grid, merged):
+def rightPossible():
     moved = False
     for row in range(4):
         for col in range(2, -1, -1):
-            if grid[row][col] != 0:
+            if GRID[row][col] != 0:
                 curr_col = col
-                while curr_col < 3 and grid[row][curr_col + 1] == 0:
-                    grid[row][curr_col + 1] = grid[row][curr_col]
-                    grid[row][curr_col] = 0
-                    curr_col += 1
+                while curr_col < 3 and GRID[row][curr_col + 1] == 0:
                     moved = True
-                if curr_col < 3 and grid[row][curr_col + 1] == grid[row][curr_col] and not merged[row][curr_col + 1]:
-                    grid[row][curr_col + 1] *= 2
-                    grid[row][curr_col] = 0
-                    merged[row][curr_col + 1] = True
+                if curr_col < 3 and GRID[row][curr_col + 1] == GRID[row][curr_col] and not GRID_MERGED[row][curr_col + 1]:
                     moved = True
+    if not moved:
+        print("no")
     return moved
 
 def noMovesPossible():
-    test_grid = copy.deepcopy(GRID)
-    test_merged = [[False] * 4 for _ in range(4)]
-    
-    return not (
-        upSim(copy.deepcopy(test_grid), copy.deepcopy(test_merged)) or
-        downSim(copy.deepcopy(test_grid), copy.deepcopy(test_merged)) or
-        leftSim(copy.deepcopy(test_grid), copy.deepcopy(test_merged)) or
-        rightSim(copy.deepcopy(test_grid), copy.deepcopy(test_merged))
-    )
+    if (
+        upPossible()  and
+        downPossible() and 
+        leftPossible() and
+        rightPossible()
+    ):
+        print("Game Over")
+        return True
+
+def gameOver():
+    gameOverOverlay(win)
 
 ###################
 # Executable code #
