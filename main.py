@@ -156,6 +156,11 @@ def add_random():
             added = True
 
 def update():
+    # global game_over
+
+    # if game_over:
+    #     return
+    
     mouse = win.checkMouse()
     keyboard = win.checkKey()
 
@@ -173,8 +178,10 @@ def update():
             resetGRID()
             resetGRID_MERGED()
 
-    if noMovesPossible() == True:
-        gameOver()
+    # if noMovesPossible():
+    #     gameOver()
+    #     game_over = True
+    #     return
 
     if keyboard == "w":
         up()
@@ -250,10 +257,6 @@ def up():
         resetGRID_MERGED()
         add_random()
         draw_grid()
-    if not moved:
-        print("no")
-        add_random()
-        draw_grid()
     return moved
 
 def upPossible():
@@ -288,10 +291,6 @@ def down():
                     moved = True
     if moved:
         resetGRID_MERGED()
-        add_random()
-        draw_grid()
-    if not moved:
-        print("no")
         add_random()
         draw_grid()
     return moved
@@ -330,10 +329,6 @@ def left():
         resetGRID_MERGED()
         add_random()
         draw_grid()
-    if not moved:
-        print("no")
-        add_random()
-        draw_grid()
     return moved
 
 def leftPossible():
@@ -370,10 +365,6 @@ def right():
         resetGRID_MERGED()
         add_random()
         draw_grid()
-    if not moved:
-        print("no")
-        add_random()
-        draw_grid()
     return moved
 
 def rightPossible():
@@ -390,23 +381,24 @@ def rightPossible():
         print("no")
     return moved
 
-def noMovesPossible():
-    if (
-        upPossible()  and
-        downPossible() and 
-        leftPossible() and
-        rightPossible()
-    ):
-        print("Game Over")
-        return True
+# def noMovesPossible():
+#     return not (upPossible() or downPossible() or leftPossible() or rightPossible())
 
-def gameOver():
-    gameOverOverlay(win)
+# def gameOver():
+#     global gameOverOverlay
+#     try:
+#         gameOverOverlay.draw(win)
+#     except GraphicsError:
+#         pass
 
 ###################
 # Executable code #
 ###################
 win = GraphWin("2048 (not for resale)", 700, 700)
+
+# gameOverOverlay = RectangleText(100, 25, 500, 500, "Game Over")
+
+# game_over = False
 
 initialSetup(win)
 draw_grid()
