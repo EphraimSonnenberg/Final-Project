@@ -1,7 +1,6 @@
 from graphics import *
 from time import sleep
 import random
-import copy
 
 ###########
 # Classes #
@@ -124,25 +123,6 @@ def draw_grid():
             if value in (64, 256, 512, 2048):
                 tile.textBox.setTextColor("white")
 
-def draw_sim_grid():
-    global grid_drawings
-    for cell in grid_drawings:
-        cell.undraw()
-    
-    grid_drawings = []
-    cell_size = 30
-    padding = 5
-    for row in range(4):
-        for col in range(4):
-            x = padding + col * (cell_size + padding)
-            y = padding + row * (cell_size + padding)
-            value = GRID[row][col]
-            tile = RectangleText(x, y, cell_size, cell_size, value)
-            tile.draw(win)
-            grid_drawings.append(tile)
-            if value in (64, 256, 512, 2048):
-                tile.textBox.setTextColor("white")
-
 def add_random():
     added = False
     while not added:
@@ -156,10 +136,6 @@ def add_random():
             added = True
 
 def update():
-    # global game_over
-
-    # if game_over:
-    #     return
     
     mouse = win.checkMouse()
     keyboard = win.checkKey()
@@ -178,35 +154,26 @@ def update():
             resetGRID()
             resetGRID_MERGED()
 
-    # if noMovesPossible():
-    #     gameOver()
-    #     game_over = True
-    #     return
-
     if keyboard == "w":
         up()
-        sleep(.4)
     elif keyboard == "Up":
         up()
-        sleep(.4)
     elif keyboard == "a":
-        left()
-        sleep(.4)
+        left()   
     elif keyboard == "Left":
         left()
-        sleep(.4)
     elif keyboard == "s":
         down()
-        sleep(.4)
     elif keyboard == "Down":
         down()
-        sleep(.4)
     elif keyboard == "d":
         right()
-        sleep(.4)
     elif keyboard == "Right":
         right()
-        sleep(.4)
+    sleep(.4)
+
+    if game_over(GRID):
+        pass
 
 def initialSetup(graphicsWindow):
     pauseButton.draw(graphicsWindow)
@@ -259,20 +226,6 @@ def up():
         draw_grid()
     return moved
 
-def upPossible():
-    moved = False
-    for col in range(4):
-        for row in range(1, 4):
-            if GRID[row][col] != 0:
-                curr_row = row
-                while curr_row > 0 and GRID[curr_row - 1][col] == 0:
-                    moved = True
-                if curr_row > 0 and GRID[curr_row - 1][col] == GRID[curr_row][col] and not GRID_MERGED[curr_row - 1][col]:
-                    moved = True
-    if not moved:
-        print("no")
-    return moved
-
 def down():
     moved = False
     for col in range(4):
@@ -293,20 +246,6 @@ def down():
         resetGRID_MERGED()
         add_random()
         draw_grid()
-    return moved
-
-def downPossible():
-    moved = False
-    for col in range(4):
-        for row in range(2, -1, -1):
-            if GRID[row][col] != 0:
-                curr_row = row
-                while curr_row < 3 and GRID[curr_row + 1][col] == 0:
-                    moved = True
-                if curr_row < 3 and GRID[curr_row + 1][col] == GRID[curr_row][col] and not GRID_MERGED[curr_row + 1][col]:
-                    moved = True
-    if not moved:
-        print("no")
     return moved
 
 def left():
@@ -331,20 +270,6 @@ def left():
         draw_grid()
     return moved
 
-def leftPossible():
-    moved = False
-    for row in range(4):
-        for col in range(1, 4):
-            if GRID[row][col] != 0:
-                curr_col = col
-                while curr_col > 0 and GRID[row][curr_col - 1] == 0:
-                    moved = True
-                if curr_col > 0 and GRID[row][curr_col - 1] == GRID[row][curr_col] and not GRID_MERGED[row][curr_col - 1]:
-                    moved = True
-    if not moved:
-        print("no")
-    return moved
-
 def right():
     moved = False
     for row in range(4):
@@ -367,38 +292,29 @@ def right():
         draw_grid()
     return moved
 
-def rightPossible():
-    moved = False
-    for row in range(4):
-        for col in range(2, -1, -1):
-            if GRID[row][col] != 0:
-                curr_col = col
-                while curr_col < 3 and GRID[row][curr_col + 1] == 0:
-                    moved = True
-                if curr_col < 3 and GRID[row][curr_col + 1] == GRID[row][curr_col] and not GRID_MERGED[row][curr_col + 1]:
-                    moved = True
-    if not moved:
-        print("no")
-    return moved
+def has_moves(GRID):
+    size = len(GRID)
+    for i in range(size):
+        for j in range(size):
+            if GRID[i][j] == 0:
+                return True  # Empty space available
+            if i < size - 1 and GRID[i][j] == GRID[i+1][j]:
+                return True  # Can merge vertically
+            if j < size - 1 and GRID[i][j] == GRID[i][j+1]:
+                return True  # Can merge horizontally
+    return False
 
-# def noMovesPossible():
-#     return not (upPossible() or downPossible() or leftPossible() or rightPossible())
-
-# def gameOver():
-#     global gameOverOverlay
-#     try:
-#         gameOverOverlay.draw(win)
-#     except GraphicsError:
-#         pass
+def game_over(GRID):
+    if not has_moves(GRID):
+        print("Game Over! No more moves available.")
+        gameOverOverlay.draw(win)
+        return True
+    return False
 
 ###################
 # Executable code #
 ###################
 win = GraphWin("2048 (not for resale)", 700, 700)
-
-# gameOverOverlay = RectangleText(100, 25, 500, 500, "Game Over")
-
-# game_over = False
 
 initialSetup(win)
 draw_grid()
