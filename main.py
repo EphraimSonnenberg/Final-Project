@@ -73,6 +73,9 @@ class RectangleText():
         }
         self.rectangle.setFill(colors.get(value, "gray"))
 
+    def getCanvas(self):
+        return self.rectangle.canvas
+
     def undraw(self):
         self.rectangle.undraw()
         self.textBox.undraw()
@@ -306,8 +309,10 @@ def has_moves(GRID):
 
 def game_over(GRID):
     if not has_moves(GRID):
-        print("Game Over! No more moves available.")
-        gameOverOverlay.draw(win)
+        if gameOverOverlay.getCanvas() == None:
+            backgroundRec.draw(win)
+            gameOverOverlay.draw(win)
+            print("Game Over! No more moves available.")
         return True
     return False
 
