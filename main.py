@@ -107,7 +107,6 @@ resetButton = RectangleButton(100, 575, 200, 75, "Reset")
 backgroundRec = Rectangle(Point(-1, -1), Point(701, 701))
 gameOverOverlay = RectangleButton(100, 25, 500, 600, "Game Over")
 gameOverOverlay.rectangle.setFill("grey")
-gameOverCountdown = Text(Point(350, 350), "")
 
 paused = False
 
@@ -190,10 +189,6 @@ def update():
         if game_over(GRID):
             pass
 
-    for i in range(5, -1, -1):
-        gameOverCountdown.setText(str(i))
-        time.sleep(1)
-
 def initialSetup(graphicsWindow):
     pauseButton.draw(graphicsWindow)
     resetButton.draw(graphicsWindow)
@@ -249,6 +244,15 @@ def unpause_game():
     unpauseButton.undraw()
     initialSetup(win)
     draw_grid()
+
+def gameOverCountdown():
+    gameOverCountdown = Text(Point(350, 300), "")
+    gameOverCountdown.draw(win)
+    for i in range(5, -1, -1):
+        gameOverCountdown.setText(str(i))
+        gameOverCountdown.undraw()
+        gameOverCountdown.draw(win)
+        time.sleep(1)
 
 def up():
     moved = False
@@ -356,7 +360,7 @@ def game_over(GRID):
             undrawSetup()
             undraw_grid(win)
             gameOverOverlay.draw(win)
-            gameOverCountdown.draw(win)
+            gameOverCountdown()
             gameOverOverlay.textBox.setText("Click Me To Restart")
             gameOverOverlay.undraw()
             gameOverOverlay.draw(win)
