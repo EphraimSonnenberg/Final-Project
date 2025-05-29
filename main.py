@@ -32,6 +32,9 @@ class RectangleButton():
 
     def getCanvas(self):
         return self.rectangle.canvas
+    
+    def setText(self, text):
+        self.setText(text)
 
     def undraw(self):
         self.rectangle.undraw()
@@ -84,10 +87,10 @@ class RectangleText():
 # Global variables #
 ####################
 GRID = [
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [2, 2, 0, 0]
+    [4, 2, 4, 2],
+    [2, 4, 2, 4],
+    [4, 2, 4, 2],
+    [2, 4, 2, 4]
 ]
 GRID_MERGED = [
     [False, False, False, False],
@@ -102,7 +105,11 @@ pauseButton = RectangleButton(400, 575, 200, 75, "Pause")
 unpauseButton = RectangleButton(200, 200, 300, 200, "Unpause")
 resetButton = RectangleButton(100, 575, 200, 75, "Reset")
 backgroundRec = Rectangle(Point(-1, -1), Point(701, 701))
-gameOverOverlay = RectangleText(100, 25, 500, 500, "Game Over")
+gameOverOverlay = RectangleButton(100, 25, 500, 600, "Game Over")
+gameOverOverlay.rectangle.setFill("grey")
+gameOverCountdown = Text(Point(350, 350), "")
+
+paused = False
 
 ##################
 # Helper methods #
@@ -126,6 +133,10 @@ def draw_grid():
             if value in (64, 256, 512, 2048):
                 tile.textBox.setTextColor("white")
 
+def undraw_grid(graphicsWindow):
+    backgroundRec.draw(graphicsWindow)
+    backgroundRec.setFill(color_rgb(240, 240, 240))
+
 def add_random():
     added = False
     while not added:
@@ -139,44 +150,49 @@ def add_random():
             added = True
 
 def update():
-    
+    global paused
     mouse = win.checkMouse()
     keyboard = win.checkKey()
 
     if mouse:
-        if pauseButton.getCanvas() and pauseButton.clickedInside(mouse.getX(), mouse.getY()):
-            undrawSetup()
-            backgroundRec.draw(win)
-            backgroundRec.setFill(color_rgb(240, 240, 240))
-            unpauseButton.draw(win)
-        elif unpauseButton.getCanvas() and unpauseButton.clickedInside(mouse.getX(), mouse.getY()):
-            initialSetup(win)
-            unpauseButton.undraw()
-            draw_grid()
-        elif resetButton.getCanvas() and resetButton.clickedInside(mouse.getX(), mouse.getY()):
-            resetGRID()
-            resetGRID_MERGED()
+        if not paused:
+            if pauseButton.getCanvas() and pauseButton.clickedInside(mouse.getX(), mouse.getY()):
+                pause_game()
+            elif resetButton.getCanvas() and resetButton.clickedInside(mouse.getX(), mouse.getY()):
+                resetGRID()
+                resetGRID_MERGED()
+            elif gameOverOverlay.getCanvas() and gameOverOverlay.clickedInside(mouse.getX(), mouse.getY()):
+                gameOverOverlay.undraw()
+                resetGameOver()
+        else:
+            if unpauseButton.getCanvas() and unpauseButton.clickedInside(mouse.getX(), mouse.getY()):
+                unpause_game()
 
-    if keyboard == "w":
-        up()
-    elif keyboard == "Up":
-        up()
-    elif keyboard == "a":
-        left()   
-    elif keyboard == "Left":
-        left()
-    elif keyboard == "s":
-        down()
-    elif keyboard == "Down":
-        down()
-    elif keyboard == "d":
-        right()
-    elif keyboard == "Right":
-        right()
-    sleep(.4)
+    if not paused:
+        if keyboard == "w":
+            up()
+        elif keyboard == "Up":
+            up()
+        elif keyboard == "a":
+            left()   
+        elif keyboard == "Left":
+            left()
+        elif keyboard == "s":
+            down()
+        elif keyboard == "Down":
+            down()
+        elif keyboard == "d":
+            right()
+        elif keyboard == "Right":
+            right()
+        sleep(.3)
 
-    if game_over(GRID):
-        pass
+        if game_over(GRID):
+            pass
+
+    for i in range(5, -1, -1):
+        gameOverCountdown.setText(str(i))
+        time.sleep(1)
 
 def initialSetup(graphicsWindow):
     pauseButton.draw(graphicsWindow)
@@ -206,6 +222,33 @@ def resetGRID_MERGED():
         [False, False, False, False],
         [False, False, False, False]
     ]
+
+def resetGameOver():
+    global GRID
+    GRID = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [2, 2, 0, 0]
+    ]
+    resetGRID_MERGED()
+    draw_grid()
+    initialSetup(win)
+
+def pause_game():
+    global paused
+    paused = True
+    undrawSetup()
+    backgroundRec.draw(win)
+    backgroundRec.setFill(color_rgb(240, 240, 240))
+    unpauseButton.draw(win)
+
+def unpause_game():
+    global paused
+    paused = False
+    unpauseButton.undraw()
+    initialSetup(win)
+    draw_grid()
 
 def up():
     moved = False
@@ -310,7 +353,12 @@ def has_moves(GRID):
 def game_over(GRID):
     if not has_moves(GRID):
         if gameOverOverlay.getCanvas() == None:
-            backgroundRec.draw(win)
+            undrawSetup()
+            undraw_grid(win)
+            gameOverOverlay.draw(win)
+            gameOverCountdown.draw(win)
+            gameOverOverlay.textBox.setText("Click Me To Restart")
+            gameOverOverlay.undraw()
             gameOverOverlay.draw(win)
             print("Game Over! No more moves available.")
         return True
