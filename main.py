@@ -109,10 +109,10 @@ gameOverOverlay = RectangleButton(100, 25, 500, 600, "Game Over")
 gameOverOverlay.rectangle.setFill("grey")
 howToPlayButton = RectangleButton(535, 100, 150, 100, "How To Play")
 howToPlayOverlay = [
-    RectangleText(100, 25, 100, 100, "How To Play"),
-    RectangleText(250, 25, 100, 100, "Use the arrow keys or WASD to move the tiles."),
-    RectangleButton(400, 25, 200, 200, "Back")
+    Text(Point(350, 50), "How To Play"),
+    Text(Point(350, 250), "Use the arrow keys or WASD to move the tiles.")
 ]
+howToPlayOverlayButton = RectangleButton(250, 500, 200, 100, "Back")
 
 paused = False
 
@@ -171,12 +171,20 @@ def update():
                 resetGameOver()
             elif howToPlayButton.getCanvas() and howToPlayButton.clickedInside(mouse.getX(), mouse.getY()):
                 howToPlayButton.undraw()
+                pause_game_()
                 for item in howToPlayOverlay:
                     item.draw(win)
-                pause_game_()
+                howToPlayOverlay[0].setSize(36)
+                howToPlayOverlay[1].setSize(18)
+                howToPlayOverlayButton.draw(win)
         else:
             if unpauseButton.getCanvas() and unpauseButton.clickedInside(mouse.getX(), mouse.getY()):
                 unpause_game()
+            elif howToPlayOverlayButton.getCanvas() and howToPlayOverlayButton.clickedInside(mouse.getX(), mouse.getY()):
+                unpause_game_()
+                howToPlayOverlayButton.undraw()
+                for item in howToPlayOverlay:
+                    item.undraw()
 
     if not paused:
         if keyboard == "w":
@@ -209,6 +217,7 @@ def undrawSetup():
     pauseButton.undraw()
     resetButton.undraw()
     backgroundRec.undraw()
+    howToPlayButton.undraw()
 
 def resetGRID():
     global GRID
@@ -261,6 +270,12 @@ def unpause_game():
     global paused
     paused = False
     unpauseButton.undraw()
+    initialSetup(win)
+    draw_grid()
+
+def unpause_game_():
+    global paused
+    paused = False
     initialSetup(win)
     draw_grid()
 
