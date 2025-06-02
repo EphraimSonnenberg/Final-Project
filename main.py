@@ -87,10 +87,10 @@ class RectangleText():
 # Global variables #
 ####################
 GRID = [
-    [4, 2, 4, 2],
-    [2, 4, 2, 4],
-    [4, 2, 4, 2],
-    [2, 4, 2, 4]
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [2, 2, 0, 0]
 ]
 GRID_MERGED = [
     [False, False, False, False],
@@ -107,6 +107,12 @@ resetButton = RectangleButton(100, 575, 200, 75, "Reset")
 backgroundRec = Rectangle(Point(-1, -1), Point(701, 701))
 gameOverOverlay = RectangleButton(100, 25, 500, 600, "Game Over")
 gameOverOverlay.rectangle.setFill("grey")
+howToPlayButton = RectangleButton(535, 100, 150, 100, "How To Play")
+howToPlayOverlay = [
+    RectangleText(100, 25, 100, 100, "How To Play"),
+    RectangleText(250, 25, 100, 100, "Use the arrow keys or WASD to move the tiles."),
+    RectangleButton(400, 25, 200, 200, "Back")
+]
 
 paused = False
 
@@ -163,6 +169,11 @@ def update():
             elif gameOverOverlay.getCanvas() and gameOverOverlay.clickedInside(mouse.getX(), mouse.getY()):
                 gameOverOverlay.undraw()
                 resetGameOver()
+            elif howToPlayButton.getCanvas() and howToPlayButton.clickedInside(mouse.getX(), mouse.getY()):
+                howToPlayButton.undraw()
+                for item in howToPlayOverlay:
+                    item.draw(win)
+                pause_game_()
         else:
             if unpauseButton.getCanvas() and unpauseButton.clickedInside(mouse.getX(), mouse.getY()):
                 unpause_game()
@@ -192,6 +203,7 @@ def update():
 def initialSetup(graphicsWindow):
     pauseButton.draw(graphicsWindow)
     resetButton.draw(graphicsWindow)
+    howToPlayButton.draw(graphicsWindow)
 
 def undrawSetup():
     pauseButton.undraw()
@@ -237,6 +249,13 @@ def pause_game():
     backgroundRec.draw(win)
     backgroundRec.setFill(color_rgb(240, 240, 240))
     unpauseButton.draw(win)
+
+def pause_game_():
+    global paused
+    paused = True
+    undrawSetup()
+    backgroundRec.draw(win)
+    backgroundRec.setFill(color_rgb(240, 240, 240))
 
 def unpause_game():
     global paused
