@@ -101,18 +101,34 @@ GRID_MERGED = [
 tileBadText = [256, 512]
 grid_drawings = []
 
+score = 0
+
 pauseButton = RectangleButton(400, 575, 200, 75, "Pause")
+pauseButton.textBox.setSize(18)
 unpauseButton = RectangleButton(200, 200, 300, 200, "Unpause")
+unpauseButton.textBox.setSize(18)
 resetButton = RectangleButton(100, 575, 200, 75, "Reset")
+resetButton.textBox.setSize(18)
 backgroundRec = Rectangle(Point(-1, -1), Point(701, 701))
 gameOverOverlay = RectangleButton(100, 25, 500, 600, "Game Over")
 gameOverOverlay.rectangle.setFill("grey")
+gameOverOverlay.textBox.setSize(24)
 howToPlayButton = RectangleButton(535, 100, 150, 100, "How To Play")
+howToPlayButton.textBox.setSize(18)
 howToPlayOverlay = [
     Text(Point(350, 50), "How To Play"),
     Text(Point(350, 250), "Use the arrow keys or WASD to move the tiles.")
 ]
 howToPlayOverlayButton = RectangleButton(250, 500, 200, 100, "Back")
+endGameOverlay = RectangleButton(100, 25, 500, 600, "You Won!!!")
+endGameOverlay.rectangle.setFill("grey")
+endGameOverlay.textBox.setSize(24)
+scoreOverlay = [
+    Text(Point(610, 30), "Score:"),
+    Text(Point(610, 70), score)
+]
+scoreOverlay[0].setSize(24)
+scoreOverlay[1].setSize(24)
 
 paused = False
 
@@ -134,6 +150,7 @@ def draw_grid():
             value = GRID[row][col]
             tile = RectangleText(x, y, cell_size, cell_size, value)
             tile.draw(win)
+            tile.textBox.setSize(28)
             grid_drawings.append(tile)
             if value in (64, 256, 512, 2048):
                 tile.textBox.setTextColor("white")
@@ -176,6 +193,7 @@ def update():
                     item.draw(win)
                 howToPlayOverlay[0].setSize(36)
                 howToPlayOverlay[1].setSize(18)
+                howToPlayOverlayButton.textBox.setSize(18)
                 howToPlayOverlayButton.draw(win)
         else:
             if unpauseButton.getCanvas() and unpauseButton.clickedInside(mouse.getX(), mouse.getY()):
@@ -207,11 +225,15 @@ def update():
 
         if game_over(GRID):
             pass
+        elif has_2048_tile(GRID):
+            end_game()
 
 def initialSetup(graphicsWindow):
     pauseButton.draw(graphicsWindow)
     resetButton.draw(graphicsWindow)
     howToPlayButton.draw(graphicsWindow)
+    for item in scoreOverlay:
+        item.draw(graphicsWindow)
 
 def undrawSetup():
     pauseButton.undraw()
@@ -280,13 +302,18 @@ def unpause_game_():
     draw_grid()
 
 def gameOverCountdown():
-    gameOverCountdown = Text(Point(350, 300), "")
+    gameOverCountdown = Text(Point(350, 250), "")
+    gameOverCountdown.setSize(24)
     gameOverCountdown.draw(win)
     for i in range(5, -1, -1):
         gameOverCountdown.setText(str(i))
         gameOverCountdown.undraw()
         gameOverCountdown.draw(win)
         time.sleep(1)
+
+def scoreAdd():
+    global score
+    score = +1
 
 def up():
     moved = False
@@ -395,12 +422,29 @@ def game_over(GRID):
             undraw_grid(win)
             gameOverOverlay.draw(win)
             gameOverCountdown()
+            gameOverOverlay.textBox.setSize(24)
             gameOverOverlay.textBox.setText("Click Me To Restart")
             gameOverOverlay.undraw()
             gameOverOverlay.draw(win)
             print("Game Over! No more moves available.")
         return True
     return False
+
+def has_2048_tile(GRID):
+    for row in GRID:
+        if 2048 in row:
+            return True
+    return False
+
+def end_game():
+    undrawSetup()
+    undraw_grid(win)
+    endGameOverlay.draw(win)
+    gameOverCountdown()
+    endGameOverlay.textBox.setText("Click Me To Restart")
+    endGameOverlay.undraw()
+    endGameOverlay.draw(win)
+    print("Game Over! No more moves available.")
 
 ###################
 # Executable code #
