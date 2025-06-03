@@ -32,7 +32,7 @@ class RectangleButton():
 
     def getCanvas(self):
         return self.rectangle.canvas
-    
+
     def setText(self, text):
         self.setText(text)
 
@@ -83,6 +83,7 @@ class RectangleText():
         self.rectangle.undraw()
         self.textBox.undraw()
 
+
 ####################
 # Global variables #
 ####################
@@ -98,7 +99,6 @@ GRID_MERGED = [
     [False, False, False, False],
     [False, False, False, False]
 ]
-tileBadText = [256, 512]
 grid_drawings = []
 
 score = 0
@@ -139,7 +139,6 @@ def draw_grid():
     global grid_drawings
     for cell in grid_drawings:
         cell.undraw()
-    
     grid_drawings = []
     cell_size = 120
     padding = 10
@@ -181,8 +180,13 @@ def update():
             if pauseButton.getCanvas() and pauseButton.clickedInside(mouse.getX(), mouse.getY()):
                 pause_game()
             elif resetButton.getCanvas() and resetButton.clickedInside(mouse.getX(), mouse.getY()):
+                global score
                 resetGRID()
                 resetGRID_MERGED()
+                score = 0
+                scoreOverlay[1].setText(score)
+                scoreOverlay[1].undraw()
+                scoreOverlay[1].draw(win)
             elif gameOverOverlay.getCanvas() and gameOverOverlay.clickedInside(mouse.getX(), mouse.getY()):
                 gameOverOverlay.undraw()
                 resetGameOver()
@@ -210,7 +214,7 @@ def update():
         elif keyboard == "Up":
             up()
         elif keyboard == "a":
-            left()   
+            left()
         elif keyboard == "Left":
             left()
         elif keyboard == "s":
@@ -240,6 +244,8 @@ def undrawSetup():
     resetButton.undraw()
     backgroundRec.undraw()
     howToPlayButton.undraw()
+    for item in scoreOverlay:
+        item.undraw()
 
 def resetGRID():
     global GRID
@@ -313,7 +319,10 @@ def gameOverCountdown():
 
 def scoreAdd():
     global score
-    score = +1
+    score = score + 1
+    scoreOverlay[1].setText(score)
+    scoreOverlay[1].undraw()
+    scoreOverlay[1].draw(win)
 
 def up():
     moved = False
@@ -330,6 +339,7 @@ def up():
                     GRID[curr_row - 1][col] *= 2
                     GRID[curr_row][col] = 0
                     GRID_MERGED[curr_row - 1][col] = True
+                    scoreAdd()
                     moved = True
     if moved:
         resetGRID_MERGED()
@@ -352,6 +362,7 @@ def down():
                     GRID[curr_row + 1][col] *= 2
                     GRID[curr_row][col] = 0
                     GRID_MERGED[curr_row + 1][col] = True
+                    scoreAdd()
                     moved = True
     if moved:
         resetGRID_MERGED()
@@ -374,6 +385,7 @@ def left():
                     GRID[row][curr_col - 1] *= 2
                     GRID[row][curr_col] = 0
                     GRID_MERGED[row][curr_col - 1] = True
+                    scoreAdd()
                     moved = True
     if moved:
         resetGRID_MERGED()
@@ -396,6 +408,7 @@ def right():
                     GRID[row][curr_col + 1] *= 2
                     GRID[row][curr_col] = 0
                     GRID_MERGED[row][curr_col + 1] = True
+                    scoreAdd()
                     moved = True
     if moved:
         resetGRID_MERGED()
@@ -418,6 +431,7 @@ def has_moves(GRID):
 def game_over(GRID):
     if not has_moves(GRID):
         if gameOverOverlay.getCanvas() == None:
+            gameOverOverlay.textBox.setText("Game Over")
             undrawSetup()
             undraw_grid(win)
             gameOverOverlay.draw(win)
@@ -445,6 +459,7 @@ def end_game():
     endGameOverlay.undraw()
     endGameOverlay.draw(win)
     print("Game Over! No more moves available.")
+
 
 ###################
 # Executable code #
