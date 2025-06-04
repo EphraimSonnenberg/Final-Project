@@ -255,6 +255,7 @@ def initialSetup(graphicsWindow):
     pauseButton.draw(graphicsWindow)
     resetButton.draw(graphicsWindow)
     howToPlayButton.draw(graphicsWindow)
+    load_high_score()
     for item in scoreOverlay:
         item.draw(graphicsWindow)
     start()
@@ -367,7 +368,19 @@ def scoreAdd(value):
         scoreOverlay[3].setText(high_score)
         scoreOverlay[3].undraw()
         scoreOverlay[3].draw(win)
-        save_to_file("high_score.txt", "Class High Score: " + str(high_score))
+        save_to_file("high_score.txt", str(high_score))
+
+def load_high_score():
+    global high_score
+    # Load high score from file (if it exists)
+    try:
+        with open("high_score.txt", 'r') as file:
+            high_score = int(file.read())
+            scoreOverlay[3].setText(high_score)
+    except FileNotFoundError:
+        high_score = 0
+    except ValueError:  # Handle cases where the file content is not a valid integer
+        high_score = 0
 
 def up():
     moved = False
