@@ -91,7 +91,7 @@ GRID = [
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
-    [2, 2, 0, 0]
+    [0, 0, 0, 0]
 ]
 GRID_MERGED = [
     [False, False, False, False],
@@ -102,6 +102,7 @@ GRID_MERGED = [
 grid_drawings = []
 
 score = 0
+high_score = 0
 
 pauseButton = RectangleButton(400, 575, 200, 75, "Pause")
 pauseButton.textBox.setSize(18)
@@ -113,7 +114,7 @@ backgroundRec = Rectangle(Point(-1, -1), Point(701, 701))
 gameOverOverlay = RectangleButton(100, 25, 500, 600, "Game Over")
 gameOverOverlay.rectangle.setFill("grey")
 gameOverOverlay.textBox.setSize(24)
-howToPlayButton = RectangleButton(535, 100, 150, 100, "How To Play")
+howToPlayButton = RectangleButton(535, 200, 150, 100, "How To Play")
 howToPlayButton.textBox.setSize(18)
 howToPlayOverlay = [
     Text(Point(350, 50), "How To Play"),
@@ -125,12 +126,18 @@ endGameOverlay.rectangle.setFill("grey")
 endGameOverlay.textBox.setSize(24)
 scoreOverlay = [
     Text(Point(610, 30), "Score:"),
-    Text(Point(610, 70), score)
+    Text(Point(610, 70), score),
+    Text(Point(610, 120), "High Score:"),
+    Text(Point(610, 160), high_score)
 ]
+
 scoreOverlay[0].setSize(24)
 scoreOverlay[1].setSize(24)
+scoreOverlay[2].setSize(20)
+scoreOverlay[3].setSize(24)
 
 paused = False
+
 
 ##################
 # Helper methods #
@@ -165,6 +172,18 @@ def add_random():
         y = random.randint(0, 3)
 
         value = random.choice([2, 4])
+
+        if GRID[y][x] == 0:
+            GRID[y][x] = value
+            added = True
+
+def start():
+    added = False
+    while not added:
+        x = random.randint(0, 3)
+        y = random.randint(0, 3)
+
+        value = 2
 
         if GRID[y][x] == 0:
             GRID[y][x] = value
@@ -225,7 +244,7 @@ def update():
             right()
         elif keyboard == "Right":
             right()
-        sleep(.3)
+        sleep(.167)
 
         if game_over(GRID):
             pass
@@ -238,7 +257,16 @@ def initialSetup(graphicsWindow):
     howToPlayButton.draw(graphicsWindow)
     for item in scoreOverlay:
         item.draw(graphicsWindow)
+    start()
+    start()
 
+def initialSetupB(graphicsWindow):
+    pauseButton.draw(graphicsWindow)
+    resetButton.draw(graphicsWindow)
+    howToPlayButton.draw(graphicsWindow)
+    for item in scoreOverlay:
+        item.draw(graphicsWindow)
+    
 def undrawSetup():
     pauseButton.undraw()
     resetButton.undraw()
@@ -253,9 +281,11 @@ def resetGRID():
         [0, 0, 0, 0],
         [0, 0, 0, 0],
         [0, 0, 0, 0],
-        [2, 2, 0, 0]
+        [0, 0, 0, 0]
     ]
     resetGRID_MERGED()
+    start()
+    start()
     draw_grid()
 
 def resetGRID_MERGED():
@@ -269,6 +299,7 @@ def resetGRID_MERGED():
 
 def resetGameOver():
     global GRID
+    global score
     GRID = [
         [0, 0, 0, 0],
         [0, 0, 0, 0],
@@ -278,6 +309,10 @@ def resetGameOver():
     resetGRID_MERGED()
     draw_grid()
     initialSetup(win)
+    score = 0
+    scoreOverlay[1].setText(score)
+    scoreOverlay[1].undraw()
+    scoreOverlay[1].draw(win)
 
 def pause_game():
     global paused
@@ -298,13 +333,13 @@ def unpause_game():
     global paused
     paused = False
     unpauseButton.undraw()
-    initialSetup(win)
+    initialSetupB(win)
     draw_grid()
 
 def unpause_game_():
     global paused
     paused = False
-    initialSetup(win)
+    initialSetupB(win)
     draw_grid()
 
 def gameOverCountdown():
@@ -317,12 +352,21 @@ def gameOverCountdown():
         gameOverCountdown.draw(win)
         time.sleep(1)
 
-def scoreAdd():
-    global score
-    score = score + 1
+def scoreAdd(value):
+    global score, high_score
+    score += value
+
+    # Update score display
     scoreOverlay[1].setText(score)
     scoreOverlay[1].undraw()
     scoreOverlay[1].draw(win)
+
+    # Update high score if needed
+    if score > high_score:
+        high_score = score
+        scoreOverlay[3].setText(high_score)
+        scoreOverlay[3].undraw()
+        scoreOverlay[3].draw(win)
 
 def up():
     moved = False
@@ -337,10 +381,12 @@ def up():
                     moved = True
                 if curr_row > 0 and GRID[curr_row - 1][col] == GRID[curr_row][col] and not GRID_MERGED[curr_row - 1][col]:
                     GRID[curr_row - 1][col] *= 2
+                    merged_value = GRID[curr_row - 1][col]
                     GRID[curr_row][col] = 0
                     GRID_MERGED[curr_row - 1][col] = True
-                    scoreAdd()
+                    scoreAdd(merged_value)
                     moved = True
+
     if moved:
         resetGRID_MERGED()
         add_random()
@@ -360,9 +406,10 @@ def down():
                     moved = True
                 if curr_row < 3 and GRID[curr_row + 1][col] == GRID[curr_row][col] and not GRID_MERGED[curr_row + 1][col]:
                     GRID[curr_row + 1][col] *= 2
+                    merged_value = GRID[curr_row + 1][col]
                     GRID[curr_row][col] = 0
                     GRID_MERGED[curr_row + 1][col] = True
-                    scoreAdd()
+                    scoreAdd(merged_value)
                     moved = True
     if moved:
         resetGRID_MERGED()
@@ -383,9 +430,10 @@ def left():
                     moved = True
                 if curr_col > 0 and GRID[row][curr_col - 1] == GRID[row][curr_col] and not GRID_MERGED[row][curr_col - 1]:
                     GRID[row][curr_col - 1] *= 2
+                    merged_value = GRID[row][curr_col - 1]
                     GRID[row][curr_col] = 0
                     GRID_MERGED[row][curr_col - 1] = True
-                    scoreAdd()
+                    scoreAdd(merged_value)
                     moved = True
     if moved:
         resetGRID_MERGED()
@@ -406,9 +454,10 @@ def right():
                     moved = True
                 if curr_col < 3 and GRID[row][curr_col + 1] == GRID[row][curr_col] and not GRID_MERGED[row][curr_col + 1]:
                     GRID[row][curr_col + 1] *= 2
+                    merged_value = GRID[row][curr_col + 1]
                     GRID[row][curr_col] = 0
                     GRID_MERGED[row][curr_col + 1] = True
-                    scoreAdd()
+                    scoreAdd(merged_value)
                     moved = True
     if moved:
         resetGRID_MERGED()
