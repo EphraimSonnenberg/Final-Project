@@ -367,6 +367,7 @@ def scoreAdd(value):
         scoreOverlay[3].setText(high_score)
         scoreOverlay[3].undraw()
         scoreOverlay[3].draw(win)
+        save_to_file("high_score.txt", "Class High Score: " + str(high_score))
 
 def up():
     moved = False
@@ -508,6 +509,14 @@ def end_game():
     endGameOverlay.undraw()
     endGameOverlay.draw(win)
     print("Game Over! No more moves available.")
+
+def save_to_file(filename, value):
+    try:
+        with open(filename, 'w') as file:
+            file.write(str(value))
+        print(f"Value saved to '{filename}' successfully.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 ###################
